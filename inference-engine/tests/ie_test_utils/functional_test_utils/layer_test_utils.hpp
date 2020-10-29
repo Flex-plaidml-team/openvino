@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <fstream>
 #include <typeindex>
 #include <string>
 #include <vector>
@@ -99,6 +100,12 @@ protected:
     void LoadNetwork();
 
     virtual void Infer();
+
+    template<InferenceEngine::Precision::ePrecision PRC>
+    void PrintBuffer(std::ofstream &os, InferenceEngine::Blob::Ptr blob);
+
+    void PrintBuffer(std::string &filename, const void* expectedBuffer, std::size_t size, const InferenceEngine::Precision &prc);
+    void PrintBuffer(std::string &filename, InferenceEngine::Blob::Ptr blob, const InferenceEngine::Precision &prc);
 
     TargetDevice targetDevice;
     std::shared_ptr<ngraph::Function> function;

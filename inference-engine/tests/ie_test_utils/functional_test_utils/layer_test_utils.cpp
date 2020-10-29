@@ -115,16 +115,91 @@ void LayerTestsCommon::LoadNetwork() {
     executableNetwork = core->LoadNetwork(cnnNetwork, targetDevice);
 }
 
+template<InferenceEngine::Precision::ePrecision PRC>
+void LayerTestsCommon::PrintBuffer(std::ofstream &os, InferenceEngine::Blob::Ptr blob) {
+    using dataType = typename InferenceEngine::PrecisionTrait<PRC>::value_type;
+    for (size_t i = 0; i < blob->size(); i++) {
+        auto *rawBlobDataPtr = blob->buffer().as<dataType *>();
+        os << rawBlobDataPtr[i] << "\n";
+    }
+}
+void LayerTestsCommon::PrintBuffer(std::string &filename, const void* expectedBuffer, std::size_t size, const InferenceEngine::Precision &prc) {
+    auto cache_dir = std::getenv("FLEX_BUFFER_CACHE");
+    if (cache_dir == nullptr) {
+        return;
+    }
+    std::ofstream os;
+    os.open(cache_dir + filename);
+    os << "data type=" <<  prc.name() << "\n";
+
+    switch (prc) {
+        case InferenceEngine::Precision::FP32: {
+                auto ptr_float = reinterpret_cast<const float *>(expectedBuffer);
+                for (int i = 0; i < size; i++) {
+                    os << ptr_float[i] << "\n";
+                }
+            }
+            break;
+        case InferenceEngine::Precision::I32: {
+                auto ptr_int32 = reinterpret_cast<const std::int32_t *>(expectedBuffer);
+                for (int i = 0; i < size; i++) {
+                    os << ptr_int32[i] << "\n";
+                }
+            }
+            break;
+        default:
+            FAIL() << "Comparator for " << prc << " precision isn't supported";
+    }
+    if (os.is_open()) {
+        os.close();
+    }
+}
+
+
+void LayerTestsCommon::PrintBuffer(std::string &filename, InferenceEngine::Blob::Ptr blob, const InferenceEngine::Precision &prc) {
+    auto cache_dir = std::getenv("FLEX_BUFFER_CACHE");
+    if (cache_dir == nullptr) {
+        return;
+    }
+    std::ofstream os;
+    os.open(cache_dir + filename);
+    os << "data type=" << prc.name() << "\n";
+    switch (prc) {
+#define CASE(X) case X: LayerTestsCommon::PrintBuffer<X>(os, blob); break;
+        CASE(InferenceEngine::Precision::FP32)
+        CASE(InferenceEngine::Precision::FP16)
+        CASE(InferenceEngine::Precision::U8)
+        CASE(InferenceEngine::Precision::U16)
+        CASE(InferenceEngine::Precision::I8)
+        CASE(InferenceEngine::Precision::I16)
+        CASE(InferenceEngine::Precision::I64)
+        CASE(InferenceEngine::Precision::BIN)
+        CASE(InferenceEngine::Precision::I32)
+        CASE(InferenceEngine::Precision::BOOL)
+#undef CASE
+        default:
+            THROW_IE_EXCEPTION << "Wrong precision specified: " << prc.name();
+    }
+    if (os.is_open()) {
+        os.close();
+    }
+}
+
 void LayerTestsCommon::Infer() {
     inferRequest = executableNetwork.CreateInferRequest();
     inputs.clear();
 
+    int index = 0;
     for (const auto &input : executableNetwork.GetInputsInfo()) {
         const auto &info = input.second;
         auto blob = GenerateInput(*info);
+        std::string filename = "input_" + std::to_string(index) + ".txt";
+        PrintBuffer(filename, blob, info->getTensorDesc().getPrecision());
         inferRequest.SetBlob(info->name(), blob);
         inputs.push_back(blob);
+        index++;
     }
+
     if (configuration.count(InferenceEngine::PluginConfigParams::KEY_DYN_BATCH_ENABLED) &&
         configuration.count(InferenceEngine::PluginConfigParams::YES)) {
         auto batchSize = executableNetwork.GetInputsInfo().begin()->second->getTensorDesc().getDims()[0] / 2;
@@ -193,9 +268,14 @@ std::vector<std::vector<std::uint8_t>> LayerTestsCommon::CalculateRefs() {
 
 std::vector<InferenceEngine::Blob::Ptr> LayerTestsCommon::GetOutputs() {
     auto outputs = std::vector<InferenceEngine::Blob::Ptr>{};
+    int index = 0;
     for (const auto &output : executableNetwork.GetOutputsInfo()) {
         const auto &name = output.first;
-        outputs.push_back(inferRequest.GetBlob(name));
+        auto blob = inferRequest.GetBlob(name);
+        std::string filename = "actual_output_" + std::to_string(index) + ".txt";
+        PrintBuffer(filename, blob, output.second->getTensorDesc().getPrecision());
+        outputs.push_back(blob);
+        index++;
     }
     return outputs;
 }
@@ -204,6 +284,8 @@ void LayerTestsCommon::Compare(const std::vector<std::vector<std::uint8_t>>& exp
     for (std::size_t outputIndex = 0; outputIndex < expectedOutputs.size(); ++outputIndex) {
         const auto& expected = expectedOutputs[outputIndex];
         const auto& actual = actualOutputs[outputIndex];
+        std::string filename = "expected_output_" + std::to_string(outputIndex) + ".txt";
+        PrintBuffer(filename, expected.data(), actual->size(), actual->getTensorDesc().getPrecision());
         Compare(expected, actual);
     }
 }
