@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#include "single_layer_tests/assign.hpp"
+#include "single_layer_tests/read_value.hpp"
 #include "common_test_utils/test_constants.hpp"
 #include <vector>
 #include <string>
 
-using LayerTestsDefinitions::AssignLayerTest;
+using LayerTestsDefinitions::ReadValueLayerTest;
 
 namespace {
 const std::vector<InferenceEngine::Precision> netPrecisions = {
@@ -17,14 +17,14 @@ const std::vector<InferenceEngine::Precision> netPrecisions = {
 };
 
 
-const std::vector<std::vector<size_t>> newShapes = {
+const std::vector<std::vector<size_t>> initShapes = {
     {2, 3}, {2, 3, 4}, {2, 3, 4, 5}        //
 };
 
-INSTANTIATE_TEST_CASE_P(AssignCheck, AssignLayerTest,
+INSTANTIATE_TEST_CASE_P(ReadValueCheck, ReadValueLayerTest,
                          ::testing::Combine(::testing::ValuesIn(netPrecisions),                          //
-                                            ::testing::ValuesIn(newShapes),                             //
+                                            ::testing::ValuesIn(initShapes),                            //
                                             ::testing::Values(std::string("id")),          //
                                             ::testing::Values(CommonTestUtils::DEVICE_PLAIDML)),          //
-                         AssignLayerTest::getTestCaseName);
+                         ReadValueLayerTest::getTestCaseName);
 }  // namespace
