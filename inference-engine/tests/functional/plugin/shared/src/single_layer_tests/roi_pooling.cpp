@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#include "single_layer_tests/ROIPooling.hpp"
+#include "single_layer_tests/roi_pooling.hpp"
 
 #include <memory>
 #include <string>
@@ -62,7 +62,7 @@ void ROIPoolingLayerTest::SetUp() {
     auto params = ngraph::builder::makeParams(ngPrc, {inputShapes});
 
     // flat coordsBox for building ngraph constant node.
-    // we have to pass those input as constant, otherwise there is no way to get ROI coordinate.
+    // now pass this input as constant, otherwise we may need gather op to support tensor parameter.
     ngraph::Shape constShape = {coordsBox.size(), coordsBox[0].size()};
     std::vector<float> flatCoords;
     for (auto roi : coordsBox) {
@@ -79,6 +79,8 @@ void ROIPoolingLayerTest::SetUp() {
     function = std::make_shared<ngraph::Function>(results, params, "ROIPooling");
 }
 
-TEST_P(ROIPoolingLayerTest, CompareWithRefs) { Run(); }
+TEST_P(ROIPoolingLayerTest, CompareWithRefs) {
+    Run();
+}
 
 }  // namespace LayerTestsDefinitions

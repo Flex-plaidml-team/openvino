@@ -28,7 +28,7 @@ using ROIPoolingParams = std::tuple<
     ROIPoolingSpecificParams,
     InferenceEngine::Precision,     // Net precision
     std::vector<size_t>,            // Input shape
-    std::vector<int>,            // Input box tensor
+    std::vector<int>,               // Input box tensor
     std::string                     // Device name
 >;
 
