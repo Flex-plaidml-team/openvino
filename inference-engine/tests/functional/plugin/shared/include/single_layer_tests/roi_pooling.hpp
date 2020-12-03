@@ -26,10 +26,10 @@ using ROIPoolingSpecificParams = std::tuple<
 
 using ROIPoolingParams = std::tuple<
     ROIPoolingSpecificParams,
-    InferenceEngine::Precision,     // Net precision
-    std::vector<size_t>,            // Input shape
-    std::vector<int>,               // Input box tensor
-    std::string                     // Device name
+    InferenceEngine::Precision,       // Net precision
+    std::vector<size_t>,              // Input shape
+    std::vector<std::vector<float>>,  // Input box tensor
+    std::string                       // Device name
 >;
 
 class ROIPoolingLayerTest : public testing::WithParamInterface<ROIPoolingParams>,

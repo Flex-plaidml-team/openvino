@@ -21,9 +21,9 @@ std::string ROIPoolingLayerTest::getTestCaseName(testing::TestParamInfo<ROIPooli
     ROIPoolingSpecificParams poolParams;
     InferenceEngine::Precision netPrecision;
     std::vector<size_t> inputShapes;
-    std::vector<int> boxShapes;
+    std::vector<std::vector<float>> boxData;
     std::string targetDevice;
-    std::tie(poolParams, netPrecision, inputShapes, boxShapes, targetDevice) = obj.param;
+    std::tie(poolParams, netPrecision, inputShapes, boxData, targetDevice) = obj.param;
     std::string method;
     size_t pooledHeight;
     size_t pooledWidth;
@@ -32,7 +32,7 @@ std::string ROIPoolingLayerTest::getTestCaseName(testing::TestParamInfo<ROIPooli
 
     std::ostringstream result;
     result << "IS=" << CommonTestUtils::vec2str(inputShapes) << "_";
-    result << "ROIS" << CommonTestUtils::vec2str(boxShapes) << "_";
+    result << "ROIS" << CommonTestUtils::vec2str(boxData) << "_";
     result << "M" << method << "_";
     result << "PH" << pooledHeight << "_";
     result << "PW" << pooledWidth << "_";
