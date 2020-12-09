@@ -79,6 +79,10 @@ enum PoolingTypes {
     MAX,
     AVG
 };
+enum ROIPoolingTypes {
+    ROI_MAX,
+    ROI_BILINEAR
+};
 enum ActivationTypes {
     None,
     Sigmoid,
