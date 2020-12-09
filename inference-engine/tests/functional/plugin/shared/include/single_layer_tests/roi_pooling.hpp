@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2020 Intel Corporation
+// Copyright (C) 2020 Intel Corporation
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -17,28 +17,27 @@
 
 namespace LayerTestsDefinitions {
 
-using ROIPoolingSpecificParams = std::tuple<
-   std::string,       // specifies a method to perform pooling.
-   size_t,            // ROI region height.
-   size_t,            // ROI region width.
-   float              // spatial_scale.
->;
+using roiPoolingParamsTuple = std::tuple<
+    InferenceEngine::SizeVector,                // Input shape
+    InferenceEngine::SizeVector,                // Coords shape
+    std::vector<size_t>,                        // Pooled shape {pooled_h, pooled_w}
+    float,                                      // Spatial scale
+    ngraph::helpers::ROIPoolingTypes,           // ROIPooling method
+    InferenceEngine::Precision,                 // Net precision
+    LayerTestsUtils::TargetDevice>;             // Device name
 
-using ROIPoolingParams = std::tuple<
-    ROIPoolingSpecificParams,
-    InferenceEngine::Precision,       // Net precision
-    std::vector<size_t>,              // Input shape
-    std::vector<std::vector<float>>,  // Input box tensor
-    std::string                       // Device name
->;
+class ROIPoolingLayerTest : public testing::WithParamInterface<roiPoolingParamsTuple>,
+                            virtual public LayerTestsUtils::LayerTestsCommon {
+   public:
+    static std::string getTestCaseName(testing::TestParamInfo<roiPoolingParamsTuple> obj);
+    void Infer() override;
 
-class ROIPoolingLayerTest : public testing::WithParamInterface<ROIPoolingParams>,
-                         virtual public LayerTestsUtils::LayerTestsCommon {
-public:
-    static std::string getTestCaseName(testing::TestParamInfo<ROIPoolingParams> obj);
-
-protected:
+   protected:
     void SetUp() override;
+
+   private:
+    ngraph::helpers::ROIPoolingTypes pool_method;
+    float spatial_scale;
 };
 
 }  // namespace LayerTestsDefinitions
