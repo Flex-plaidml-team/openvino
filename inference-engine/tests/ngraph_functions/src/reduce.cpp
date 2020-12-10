@@ -30,6 +30,10 @@ std::shared_ptr<ngraph::Node> makeReduce(const ngraph::Output<Node>& data,
             return std::make_shared<ngraph::opset3::LogicalAnd>(data, axes);
         case helpers::LogicalXor:
             return std::make_shared<ngraph::opset3::LogicalXor>(data, axes);
+        case helpers::L1:
+            return std::make_shared<ngraph::opset4::ReduceL1>(data, axes, keepDims);
+        case helpers::L2:
+            return std::make_shared<ngraph::opset4::ReduceL2>(data, axes, keepDims);
         default:
             throw std::runtime_error("Can't create layer for this reduction type");
     }
