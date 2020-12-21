@@ -33,35 +33,19 @@ std::string RangeLayerTest::getTestCaseName(testing::TestParamInfo<RangeParams> 
     return result.str();
 }
 
-void RangeLayerTest::Infer() {
-    inferRequest = executableNetwork.CreateInferRequest();
-    inputs.clear();
-
-    auto blobStart = inferRequest.GetBlob("start");
-    blobStart = FuncTestUtils::createAndFillBlobWithFloatArray(blobStart->getTensorDesc(), &start, 1);
-
-    auto blobStop = inferRequest.GetBlob("stop");
-    blobStop = FuncTestUtils::createAndFillBlobWithFloatArray(blobStop->getTensorDesc(), &stop, 1);
-
-    auto blobStep = inferRequest.GetBlob("step");
-    blobStep = FuncTestUtils::createAndFillBlobWithFloatArray(blobStep->getTensorDesc(), &step, 1);
-
-    inferRequest.Infer();
-}
-
 void RangeLayerTest::SetUp() {
+    SetRefMode(LayerTestsUtils::RefMode::IE);
     InferenceEngine::Precision netPrecision;
     std::tie(start, stop, step, netPrecision, targetDevice) = GetParam();
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
 
-    auto params = ngraph::builder::makeParams(ngPrc, {std::vector<size_t>(), std::vector<size_t>(), std::vector<size_t>()});
-    params[0]->set_friendly_name("start");
-    params[1]->set_friendly_name("stop");
-    params[2]->set_friendly_name("step");
+    auto params_start = std::make_shared<ngraph::opset1::Constant>(ngraph::element::f32, ngraph::Shape{}, start);
+    auto params_stop = std::make_shared<ngraph::opset1::Constant>(ngraph::element::f32, ngraph::Shape{}, stop);
+    auto params_step = std::make_shared<ngraph::opset1::Constant>(ngraph::element::f32, ngraph::Shape{}, step);
 
-    auto range = std::make_shared<ngraph::opset3::Range>(params[0], params[1], params[2]);
+    auto range = std::make_shared<ngraph::opset3::Range>(params_start, params_stop, params_step);
     const ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(range)};
-    function = std::make_shared<ngraph::Function>(results, params, "Range");
+    function = std::make_shared<ngraph::Function>(results, ngraph::ParameterVector{}, "Range");
 }
 
 TEST_P(RangeLayerTest, CompareWithRefs) {
