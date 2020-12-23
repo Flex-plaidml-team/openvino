@@ -323,7 +323,7 @@ CNNNetworkNGraphImpl::reshape(const std::map<std::string, std::vector<size_t>>& 
         _ngraph_function->validate_nodes_and_infer_types();
 
         {
-            auto specialized_ngraph_function = cloneFunction(true);
+            auto specialized_ngraph_function = cloneFunction(false);
             // Call this transformation because OneHot IE and nGraph have different output precisions
             {
                 OV_ITT_SCOPED_TASK(itt::domains::IE, "CNNNetworkNGraphImpl::ConvertOneHot");
