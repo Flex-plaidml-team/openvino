@@ -76,9 +76,9 @@ namespace ngraph
                                 arg_index *= elem_size;
                                 dest_index *= elem_size;
 
-                                std::copy(arg + arg_index,
-                                          arg + (arg_index + elem_size),
-                                          out + dest_index);
+                                std::copy(arg + dest_index,
+                                          arg + (dest_index + elem_size),
+                                          out + arg_index);
                             }
                         }
                     }
