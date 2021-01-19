@@ -40,8 +40,8 @@ void ReverseSequenceLayerTest::SetUp() {
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
     auto paramsIn = ngraph::builder::makeParams(ngPrc, {inputShape});
 
-    auto secondPrc = ngraph::element::Type_t::i32;  // according to the specification
-    auto secondaryInput = ngraph::builder::makeConstant(secondPrc, {secondInputShape.size()}, secondInputShape);
+    auto secondPrc = ngraph::element::Type_t::i32; //according to the specification
+    auto secondaryInput = ngraph::builder::makeInputLayer(secondPrc, secondaryInputType, secondInputShape);
     if (secondaryInputType == ngraph::helpers::InputLayerType::PARAMETER) {
         paramsIn.push_back(std::dynamic_pointer_cast<ngraph::opset3::Parameter>(secondaryInput));
     }

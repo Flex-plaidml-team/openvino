@@ -2,21 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#include <tuple>
-#include <string>
-#include <vector>
-#include <memory>
-#include <ie_plugin_config.hpp>
-#include <ie_core.hpp>
-#include <functional>
-
-#include "functional_test_utils/blob_utils.hpp"
-#include "shared_test_classes/base/layer_test_utils.hpp"
-#include "common_test_utils/common_utils.hpp"
-#include "single_layer_tests/reverse.hpp"
+#include "shared_test_classes/single_layer/reverse.hpp"
 
 namespace LayerTestsDefinitions {
-    std::string ReverseLayerTest::getTestCaseName(testing::TestParamInfo<reverseParams> obj) {
+std::string ReverseLayerTest::getTestCaseName(testing::TestParamInfo<reverseParams> obj) {
     InferenceEngine::Precision netPrecision;
     InferenceEngine::SizeVector inputShapes;
     std::vector<size_t> axes;
@@ -40,8 +29,7 @@ void ReverseLayerTest::SetUp() {
     std::tie(netPrecision, inputShapes, axes, mode, targetDevice, configuration) = this->GetParam();
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
     auto paramsIn = ngraph::builder::makeParams(ngPrc, {inputShapes});
-    auto paramIn = ngraph::helpers::convert2OutputVector(
-            ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(paramsIn));
+    auto paramIn = ngraph::helpers::convert2OutputVector(ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(paramsIn));
     std::shared_ptr<ngraph::opset1::Constant> constNode;
     auto axes_dtype = (mode == "index") ? ngraph::element::Type_t::i64 : ngraph::element::Type_t::boolean;
     constNode = std::make_shared<ngraph::opset1::Constant>(axes_dtype, ngraph::Shape{axes.size()}, axes);
@@ -51,7 +39,4 @@ void ReverseLayerTest::SetUp() {
     function = std::make_shared<ngraph::Function>(results, paramsIn, "Reverse");
 }
 
-TEST_P(ReverseLayerTest, CompareWithRefsDynamicBath) {
-    Run();
-}
 }  // namespace LayerTestsDefinitions

@@ -2,22 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#include <tuple>
-#include <string>
-#include <vector>
-#include <memory>
-#include <ie_plugin_config.hpp>
-#include <ie_core.hpp>
-#include <functional>
-
-#include "functional_test_utils/blob_utils.hpp"
-#include "shared_test_classes/base/layer_test_utils.hpp"
-#include "common_test_utils/common_utils.hpp"
-#include "single_layer_tests/bucketize.hpp"
-#include <iostream>
+#include "shared_test_classes/single_layer/bucketize.hpp"
 
 namespace LayerTestsDefinitions {
-    std::string BucketizeLayerTest::getTestCaseName(testing::TestParamInfo<bucketizeParams> obj) {
+std::string BucketizeLayerTest::getTestCaseName(testing::TestParamInfo<bucketizeParams> obj) {
     InferenceEngine::Precision netPrecision;
     InferenceEngine::SizeVector inputShapes;
     std::vector<size_t> buckets;
@@ -48,15 +36,11 @@ void BucketizeLayerTest::SetUp() {
     auto ngPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(netPrecision);
     auto outputPrc = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(outputPrecision);
     auto paramsIn = ngraph::builder::makeParams(ngPrc, {inputShapes, buckets});
-    auto paramIn = ngraph::helpers::convert2OutputVector(
-            ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(paramsIn));
+    auto paramIn = ngraph::helpers::convert2OutputVector(ngraph::helpers::castOps2Nodes<ngraph::op::Parameter>(paramsIn));
     auto bucketize = std::dynamic_pointer_cast<ngraph::opset3::Bucketize>(
             std::make_shared<ngraph::opset3::Bucketize>(paramIn[0], paramIn[1], outputPrc, withRightBound));
     ngraph::ResultVector results{std::make_shared<ngraph::opset1::Result>(bucketize)};
     function = std::make_shared<ngraph::Function>(results, paramsIn, "Bucketize");
 }
 
-TEST_P(BucketizeLayerTest, CompareWithRefsDynamicBath) {
-    Run();
-}
 }  // namespace LayerTestsDefinitions

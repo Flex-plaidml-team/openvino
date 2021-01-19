@@ -1,33 +1,15 @@
-// Copyright (C) 2020 Intel Corporation
+// Copyright (C) 2019 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
 #pragma once
 
-#include <tuple>
-#include <string>
-#include <vector>
-#include <memory>
-
-#include "shared_test_classes/base/layer_test_utils.hpp"
-#include "ngraph_functions/builders.hpp"
-#include "ngraph_functions/utils/ngraph_helpers.hpp"
+#include "shared_test_classes/single_layer/squared_difference.hpp"
 
 namespace LayerTestsDefinitions {
 
-using squaredDifferenceParams =  std::tuple<
-    InferenceEngine::Precision,     // Net precision
-    std::vector<std::vector<size_t>>,   // Input shapes
-    std::string                     // Target device name
->;
-
-class SquaredDifferenceLayerTest : public testing::WithParamInterface<squaredDifferenceParams>,
-                                   virtual public LayerTestsUtils::LayerTestsCommon {
-public:
-    static std::string getTestCaseName(const testing::TestParamInfo<squaredDifferenceParams> obj);
-
-protected:
-    void SetUp() override;
+TEST_P(SquaredDifferenceLayerTest, CompareWithRefs) {
+    Run();
 };
 
-}  // namespace LayerTestsDefinitions
+} // namespace LayerTestsDefinitions

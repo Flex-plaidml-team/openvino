@@ -2,9 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-#include <functional>
-
-#include "single_layer_tests/one_hot.hpp"
+#include "shared_test_classes/single_layer/one_hot.hpp"
 
 namespace LayerTestsDefinitions {
 
@@ -50,8 +48,4 @@ void OnehotLayerTest::SetUp() {
     function = std::make_shared<ngraph::Function>(results, params, "onehot");
 }
 
-TEST_P(OnehotLayerTest, CompareWithRefs) {
-    Run();
-}
-
-} // namespace LayerTestsDefinitions
+}  // namespace LayerTestsDefinitions
