@@ -77,7 +77,6 @@ namespace LayerTestsDefinitions {
         InferenceEngine::SizeVector coordsShape;
         InferenceEngine::SizeVector poolShape;
         InferenceEngine::Precision netPrecision;
-        float spatial_scale;
 
         std::tie(inputShape, coordsShape, poolShape, spatial_scale, pool_method, netPrecision, secondaryInputType, targetDevice) = this->GetParam();
 
@@ -89,8 +88,14 @@ namespace LayerTestsDefinitions {
         for (auto dim : coordsShape){
             size *= dim;
         }
-        std::vector<float> coords(size);
+        std::vector<float> coords(size, 0);
         GenerateCoords(inputShape, coords.data(), size);
+        for (auto i=0; i< coords.size(); i+=5){
+            for (auto j=0; j< 5; j++){
+                std::cout<<coords[i+j] << "  ";
+            }
+            std::cout<<std::endl;
+        }
         auto secondaryInput = ngraph::builder::makeInputLayer(ngPrc, secondaryInputType, coordsShape, coords);
         if (secondaryInputType == ngraph::helpers::InputLayerType::PARAMETER) {
             params.push_back(std::dynamic_pointer_cast<ngraph::opset3::Parameter>(secondaryInput));
