@@ -67,6 +67,24 @@ std::shared_ptr<Node> makeConstant(const element::Type &type, const std::vector<
     return weightsNode;
 }
 
+template <typename T>
+std::shared_ptr<ngraph::Node> makeInputLayer(const element::Type &type, ngraph::helpers::InputLayerType inputType,
+                                             const std::vector<size_t> &shape, const std::vector<T> &data) {
+    std::shared_ptr<ngraph::Node> input;
+    switch (inputType) {
+        case ngraph::helpers::InputLayerType::CONSTANT: {
+            input = ngraph::builder::makeConstant<T>(type, shape, data, false);
+            break;
+        }
+        case ngraph::helpers::InputLayerType::PARAMETER:
+            input = ngraph::builder::makeParams(type, {shape})[0];
+            break;
+        default:
+            throw std::runtime_error("Unsupported inputType");
+    }
+    return input;
+}
+
 std::shared_ptr<ngraph::Node> makeInputLayer(const element::Type& type, ngraph::helpers::InputLayerType inputType,
                                              const std::vector<size_t>& shape);
 
