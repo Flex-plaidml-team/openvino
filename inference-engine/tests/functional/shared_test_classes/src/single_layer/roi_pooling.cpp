@@ -77,7 +77,6 @@ namespace LayerTestsDefinitions {
         InferenceEngine::SizeVector coordsShape;
         InferenceEngine::SizeVector poolShape;
         InferenceEngine::Precision netPrecision;
-        float spatial_scale;
 
         std::tie(inputShape, coordsShape, poolShape, spatial_scale, pool_method, netPrecision, secondaryInputType, targetDevice) = this->GetParam();
 
