@@ -47,6 +47,7 @@ typedef std::tuple<
         InferenceEngine::Layout,      // Output layout
         InferenceEngine::SizeVector,  // input shape
         InferenceEngine::SizeVector,  // image shape
+        ngraph::helpers::InputLayerType,  // input type
         std::string> priorBoxClusteredLayerParams;
 
 class PriorBoxClusteredLayerTest

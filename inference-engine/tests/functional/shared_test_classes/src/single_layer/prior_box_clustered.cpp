@@ -13,12 +13,14 @@ std::string PriorBoxClusteredLayerTest::getTestCaseName(const testing::TestParam
     InferenceEngine::Layout inLayout, outLayout;
     InferenceEngine::SizeVector inputShapes, imageShapes;
     std::string targetDevice;
+    ngraph::helpers::InputLayerType inputType;
     priorBoxClusteredSpecificParams specParams;
     std::tie(specParams,
         netPrecision,
         inPrc, outPrc, inLayout, outLayout,
         inputShapes,
         imageShapes,
+        inputType,
         targetDevice) = obj.param;
 
     std::vector<float> widths, heights, variances;
@@ -53,16 +55,18 @@ std::string PriorBoxClusteredLayerTest::getTestCaseName(const testing::TestParam
     result << "stepHeight=" << step_height << separator;
     result << "offset="     << offset      << separator;
     result << "clip=" << std::boolalpha << clip << separator;
+    result << "inputType=" << inputType;
     result << "trgDev=" << targetDevice;
     return result.str();
 }
 
 void PriorBoxClusteredLayerTest::SetUp() {
     SetRefMode(LayerTestsUtils::RefMode::CONSTANT_FOLDING);
+    ngraph::helpers::InputLayerType inputType;
     priorBoxClusteredSpecificParams specParams;
     std::tie(specParams, netPrecision,
         inPrc, outPrc, inLayout, outLayout,
-        inputShapes, imageShapes, targetDevice) = GetParam();
+        inputShapes, imageShapes, inputType, targetDevice) = GetParam();
 
     std::tie(widths,
         heights,
@@ -84,12 +88,25 @@ void PriorBoxClusteredLayerTest::SetUp() {
     attributes.offset = offset;
     attributes.variances = variances;
 
-    auto shape_of_1 = std::make_shared<ngraph::opset3::ShapeOf>(params[0]);
-    auto shape_of_2 = std::make_shared<ngraph::opset3::ShapeOf>(params[1]);
-    auto priorBoxClustered = std::make_shared<ngraph::op::PriorBoxClustered>(
-        shape_of_1,
-        shape_of_2,
-        attributes);
+    std::shared_ptr<ngraph::op::PriorBoxClustered> priorBoxClustered;
+    if(inputType == ngraph::helpers::InputLayerType::PARAMETER) {
+      auto shape_of_1 = std::make_shared<ngraph::opset3::ShapeOf>(params[0]);
+      auto shape_of_2 = std::make_shared<ngraph::opset3::ShapeOf>(params[1]);
+      priorBoxClustered = std::make_shared<ngraph::op::PriorBoxClustered>(
+          shape_of_1,
+          shape_of_2,
+          attributes);
+    } else {
+      auto inputPrc = ngraph::element::Type_t::i64;
+      auto constInput1 = std::make_shared<ngraph::opset5::Constant>(
+            inputPrc, ngraph::Shape{inputShapes.size()}, inputShapes);
+      auto constInput2 = std::make_shared<ngraph::opset5::Constant>(
+            inputPrc, ngraph::Shape{imageShapes.size()}, imageShapes);
+      priorBoxClustered = std::make_shared<ngraph::op::PriorBoxClustered>(
+          constInput1,
+          constInput2,
+          attributes);
+    }
 
     ngraph::ResultVector results{ std::make_shared<ngraph::opset1::Result>(priorBoxClustered) };
     function = std::make_shared<ngraph::Function>(results, params, "PB_Clustered");

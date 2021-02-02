@@ -46,6 +46,11 @@ const std::vector<bool> clips = {
     true, false
 };
 
+const std::vector<ngraph::helpers::InputLayerType> InputTypes = {
+  ngraph::helpers::InputLayerType::CONSTANT,
+  ngraph::helpers::InputLayerType::PARAMETER,
+};
+
 const auto layerSpeficParams = ::testing::Combine(
     ::testing::ValuesIn(widths),
     ::testing::ValuesIn(heights),
@@ -66,6 +71,7 @@ INSTANTIATE_TEST_CASE_P(smoke_PriorBoxClustered_Basic, PriorBoxClusteredLayerTes
                             ::testing::Values(InferenceEngine::Layout::ANY),
                             ::testing::Values(std::vector<size_t>({ 4, 4 })),
                             ::testing::Values(std::vector<size_t>({ 50, 50 })),
+                            ::testing::Values(InputTypes),
                             ::testing::Values(CommonTestUtils::DEVICE_GPU)),
                         PriorBoxClusteredLayerTest::getTestCaseName
 );
