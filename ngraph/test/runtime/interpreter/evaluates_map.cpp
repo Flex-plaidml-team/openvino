@@ -694,7 +694,7 @@ namespace
         {
             if (box_encoding == V5BoxEncoding::CORNER)
             {
-                normalize_corner(boxes, boxes_shape);
+                //normalize_corner(boxes, boxes_shape);
             }
             else
             {

@@ -376,7 +376,26 @@ std::vector<std::vector<std::uint8_t>> LayerTestsCommon::CalculateRefs() {
         refInputsTypes[i] = FuncTestUtils::PrecisionUtils::convertIE2nGraphPrc(memory->getTensorDesc().getPrecision());
     }
 
-    const auto &&outputsInfo = executableNetwork.GetOutputsInfo();
+    auto mapInfo = executableNetwork.GetOutputsInfo();
+    std::vector<std::pair<std::string, InferenceEngine::CDataPtr>> outputsInfo(mapInfo.begin(), mapInfo.end());
+    typedef std::pair<std::string, InferenceEngine::CDataPtr> pp;
+    struct {
+      bool operator()(
+          const pp a,
+          const pp b) const {
+        bool result = false;
+        if (a.first.length() < b.first.length()) {
+          // No exchange
+          result = true;
+        } else if (a.first.compare(b.first) < 0) {
+          // A is smaller than B
+          result = true;
+        }
+        return result;
+      }
+    } blobLess;
+    std::sort(outputsInfo.begin(), outputsInfo.end(), blobLess);
+    //const auto &&outputsInfo = executableNetwork.GetOutputsInfo();
     std::vector<ngraph::element::Type_t> convertType;
     convertType.reserve(outputsInfo.size());
         for (const auto &output : outputsInfo) {
@@ -407,7 +426,27 @@ std::vector<std::vector<std::uint8_t>> LayerTestsCommon::CalculateRefs() {
 
 std::vector<InferenceEngine::Blob::Ptr> LayerTestsCommon::GetOutputs() {
     auto outputs = std::vector<InferenceEngine::Blob::Ptr>{};
-    for (const auto &output : executableNetwork.GetOutputsInfo()) {
+    auto mapInfo = executableNetwork.GetOutputsInfo();
+    std::vector<std::pair<std::string, InferenceEngine::CDataPtr>> outputsInfo(mapInfo.begin(), mapInfo.end());
+    typedef std::pair<std::string, InferenceEngine::CDataPtr> pp;
+    struct {
+      bool operator()(
+          const pp a,
+          const pp b) const {
+        bool result = false;
+        if (a.first.length() < b.first.length()) {
+          // No exchange
+          result = true;
+        } else if (a.first.compare(b.first) < 0) {
+          // A is smaller than B
+          result = true;
+        }
+        return result;
+      }
+    } blobLess;
+    std::sort(outputsInfo.begin(), outputsInfo.end(), blobLess);
+    //for (const auto &output : executableNetwork.GetOutputsInfo()) {
+    for (const auto &output : outputsInfo) {
         const auto &name = output.first;
         outputs.push_back(inferRequest.GetBlob(name));
     }
