@@ -28,6 +28,8 @@
 #include "ngraph/op/result.hpp"
 #include "ngraph/pattern/matcher.hpp"
 
+#define NGRAPH_NODE_NAME_ID_LENGTH 8
+
 using namespace std;
 using namespace ngraph;
 
@@ -291,7 +293,10 @@ const std::string& Node::get_name() const
 {
     if (m_unique_name.empty())
     {
-        const_cast<Node*>(this)->m_unique_name = description() + "_" + to_string(m_instance_id);
+        std::string id_str = to_string(m_instance_id);
+        const_cast<Node*>(this)->m_unique_name =
+            description() + "_" +
+            std::string(NGRAPH_NODE_NAME_ID_LENGTH - id_str.size(), '0').append(id_str);
     }
     return m_unique_name;
 }
